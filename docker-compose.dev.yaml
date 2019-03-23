@@ -1,0 +1,16 @@
+version: '3'
+services:
+  gatsby:
+    command: ["gatsby", "develop", "--host", "0.0.0.0" ]
+    volumes:
+      - ./src:/home/gatsby-app/src
+    environment:
+      NODE_ENV: development
+    stdin_open: true
+    tty: true
+  wordpress:
+    stdin_open: true
+    tty: true
+  db:
+    stdin_open: true
+    tty: true

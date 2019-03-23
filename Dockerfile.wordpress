@@ -1,0 +1,12 @@
+FROM wordpress:latest
+
+EXPOSE 80
+
+# Set workdir
+WORKDIR /var/www/html
+
+# Copy php uploads config file
+COPY ./wordpress/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
+# Copy wordpress content
+COPY ./wordpress/plugins_for_setup/* /usr/src/wordpress/wp-content/plugins/
