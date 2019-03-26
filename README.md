@@ -21,7 +21,6 @@ Setup your local [Wordpress](https://localhost:8080/) :
 1. Make an initial installation
 1. Enable Wordpress plugins ( ACF to REST API, Advanced Custom Fields, Custom Post Type UI, WP REST API Menus )
 1. Setup `pretty permalinks` **Settings** => **Permalinks** => choose '**Post name**' and save.
-1. Setup Site Address (URL) to allow Gatsby properly fetch data inside of Docker: **Settings** => **Site Address (URL)** and change to `http://wordpress` (this is name of our wordpress docker container) and save.
 
 Restart Gatsby container manually or stop/start everything to make Gatsby properly initialized
 

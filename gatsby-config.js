@@ -7,7 +7,7 @@ module.exports = {
   plugins: [
     `gatsby-plugin-react-helmet`,
     {
-        resolve: "gatsby-source-wordpress",
+        resolve: require.resolve(`./src/plugins/gatsby-source-wordpress`),
         options: {
             baseUrl: process.env.WORDPRESS_URL,
             protocol: "http",
@@ -42,6 +42,12 @@ module.exports = {
     },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
+    {
+      resolve: `gatsby-plugin-sass`,
+      options: {
+        sourceMap: true
+      },
+    },
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
