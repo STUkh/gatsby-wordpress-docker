@@ -1,5 +1,6 @@
 .git
 .gitignore
+.gitkeep
 LICENSE
 VERSION
 README.md
