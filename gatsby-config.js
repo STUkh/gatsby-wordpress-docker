@@ -19,9 +19,9 @@ module.exports = {
             perPage: 100,
             concurrentRequests: 10,
             includedRoutes: [
-                "/wp/v2/**",
-                "/wp-api-menus/**",
-                "/acf/v3/**",
+                "/*/*/posts",
+                "/*/*/pages",
+                "/*/*/menus",
                 // "**/*/*/categories",
                 // "**/*/*/posts",
                 // "**/*/*/pages",

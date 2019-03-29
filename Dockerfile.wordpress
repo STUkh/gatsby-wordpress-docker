@@ -9,4 +9,4 @@ WORKDIR /var/www/html
 COPY ./wordpress/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 # Copy wordpress content
-COPY ./wordpress/plugins_for_setup/* /usr/src/wordpress/wp-content/plugins/
+COPY ./wordpress/content_for_setup/* /usr/src/wordpress/wp-content/

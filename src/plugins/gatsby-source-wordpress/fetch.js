@@ -8,6 +8,10 @@ const _ = require(`lodash`);
 
 const minimatch = require(`minimatch`);
 
+const {
+  URL
+} = require(`url`);
+
 const colorized = require(`./output-color`);
 
 const httpExceptionHandler = require(`./http-exception-handler`);
@@ -139,6 +143,7 @@ Mama Route URL: ${url}
       url,
       _verbose,
       _useACF,
+      _hostingWPCOM,
       _acfOptionPageIds,
       _includedRoutes,
       _excludedRoutes,
@@ -155,6 +160,7 @@ Fetching the JSON data from ${validRoutes.length} valid API Routes...
     for (let route of validRoutes) {
       entities = entities.concat((await fetchData({
         route,
+        apiUrl: url,
         _verbose,
         _perPage,
         _auth,
@@ -240,6 +246,7 @@ async function getJWToken(_auth, url) {
 
 async function fetchData({
   route,
+  apiUrl,
   _verbose,
   _perPage,
   _auth,
@@ -293,11 +300,13 @@ async function fetchData({
     if (type == `wordpress__wp_api_menus_menus`) {
       for (let menu of routeResponse) {
         if (menu.meta && menu.meta.links && menu.meta.links.self) {
+          menu.meta.links.self = getProperSelfPath(apiUrl, menu.meta.links.self);
           entities = entities.concat((await fetchData({
             route: {
               url: menu.meta.links.self,
               type: `${type}_items`
             },
+            apiUrl,
             _verbose,
             _perPage,
             _auth,
@@ -486,16 +495,10 @@ function getValidRoutes({
     let route = allRoutes.data.routes[key]; // A valid route exposes its _links (for now)
 
     if (route._links) {
-      const entityType = getRawEntityType(route); // Excluding the "technical" API Routes
+      const entityType = getRawEntityType(key); // Excluding the "technical" API Routes
 
       const excludedTypes = [`/v2/**`, `/v3/**`, `**/1.0`, `**/2.0`, `**/embed`, `**/proxy`, `/`, `/jwt-auth/**`];
-      const isDifferentDomains = route._links.self.indexOf(url) === -1;
-
-      if (isDifferentDomains) {
-        route._links.self = route._links.self.replace(/(.*?)\/wp-json/, url);
-      }
-
-      const routePath = getRoutePath(url, route._links.self);
+      const routePath = getRoutePath(url, key);
       const whiteList = _includedRoutes;
       const blackList = [...excludedTypes, ..._excludedRoutes]; // Check whitelist first
 
@@ -538,7 +541,7 @@ function getValidRoutes({
         }
 
         validRoutes.push({
-          url: route._links.self,
+          url: buildFullUrl(url, key, _hostingWPCOM),
           type: validType
         });
       } else {
@@ -555,22 +558,62 @@ function getValidRoutes({
   return validRoutes;
 }
 /**
- * Extract the raw entity type from route
+ * Extract the raw entity type from fullPath
  *
- * @param {any} route
+ * @param {any} full path to extract raw entity from
  */
 
 
-const getRawEntityType = route => route._links.self.substring(route._links.self.lastIndexOf(`/`) + 1, route._links.self.length);
+const getRawEntityType = fullPath => fullPath.substring(fullPath.lastIndexOf(`/`) + 1, fullPath.length);
 /**
  * Extract the route path for an endpoint
  *
  * @param {any} baseUrl The base site URL that should be removed
- * @param {any} fullUrl The full URL to retrieve the route path from
+ * @param {any} fullPath The full path to retrieve the route path from
  */
 
 
-const getRoutePath = (baseUrl, fullUrl) => fullUrl.replace(baseUrl, ``);
+const getRoutePath = (baseUrl, fullPath) => {
+  const baseUrlObj = new URL(baseUrl);
+  const basePath = baseUrlObj.pathname;
+  return fullPath.replace(basePath, ``);
+};
+/**
+ * Extract the route path for an endpoint
+ *
+ * @param {string} apiUrl he base site API URL
+ * @param {string} self URL that returned from server response. May contain domain differs from apiUrl
+ */
+
+
+const getProperSelfPath = (apiUrl, self) => {
+  // Replace route self host to baseUrl if differs
+  const isDifferentDomains = self.indexOf(apiUrl) === -1;
+
+  if (isDifferentDomains) {
+    return self.replace(/(.*?)\/wp-json/, apiUrl);
+  }
+
+  return self;
+};
+/**
+ * Build full URL from baseUrl and fullPath.
+ * Method of contructing full URL depends on wether it's hosted on wordpress.com
+ * or not as wordpress.com have slightly different (custom) REST structure
+ *
+ * @param {any} baseUrl The base site URL that should be prepended to full path
+ * @param {any} fullPath The full path to build URL from
+ * @param {boolean} _hostingWPCOM Is hosted on wordpress.com
+ */
+
+
+const buildFullUrl = (baseUrl, fullPath, _hostingWPCOM) => {
+  if (_hostingWPCOM) {
+    baseUrl = new URL(baseUrl).origin;
+  }
+
+  return `${baseUrl}${fullPath}`;
+};
 /**
  * Extract the route manufacturer
  *
@@ -580,4 +623,8 @@ const getRoutePath = (baseUrl, fullUrl) => fullUrl.replace(baseUrl, ``);
 
 const getManufacturer = route => route.namespace.substring(0, route.namespace.lastIndexOf(`/`));
 
+fetch.getRawEntityType = getRawEntityType;
+fetch.getRoutePath = getRoutePath;
+fetch.buildFullUrl = buildFullUrl;
+fetch.getProperSelfPath = getProperSelfPath;
 module.exports = fetch;
