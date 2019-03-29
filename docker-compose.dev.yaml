@@ -4,6 +4,7 @@ services:
     command: ["gatsby", "develop", "--host", "0.0.0.0" ]
     volumes:
       - ./src:/home/gatsby-app/src
+      - ./.cache:/home/gatsby-app/.cache
     environment:
       NODE_ENV: development
     stdin_open: true

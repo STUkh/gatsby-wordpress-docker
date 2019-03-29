@@ -6,6 +6,8 @@ module.exports = {
   },
   plugins: [
     `gatsby-plugin-react-helmet`,
+    `gatsby-plugin-sitemap`,
+    'gatsby-plugin-robots-txt',
     {
         resolve: require.resolve(`./src/plugins/gatsby-source-wordpress`),
         options: {
@@ -32,6 +34,17 @@ module.exports = {
             ],
             excludedRoutes: ["/wp/v2/users/me", "/acf/v3/options", "/wp/v2/settings"],
         },
+    },
+    {
+      resolve: `gatsby-plugin-prefetch-google-fonts`,
+      options: {
+        fonts: [
+          {
+            family: `Montserrat`,
+            variants: [`400`, `600`, `700`]
+          },
+        ],
+      },
     },
     {
       resolve: `gatsby-source-filesystem`,
